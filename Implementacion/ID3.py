@@ -79,28 +79,23 @@ class ID3:
             return Nodo(mas_comun(self,target_attribute))
         
         # En otro caso
-        def mejor_clasifica(As,tA):            
+        def mejor_clasifica(atts,tatt):            
             def information_gain(A,tA,S):
                 def subS(v,S,A):
                     # Calcula subconjunto de S donde el atributo A tiene valor v
-                    print A, v, [s for s in S if s[A]==v]
                     return [s for s in S if s[A]==v]
-                def entropy(S,tA):                    
+                def entropy(S,target_attribute):                    
                     def subclases(S):
-                        ordenado = sorted(S, key=lambda s : s[tA])
-                        agrupado = groupby(ordenado, key=lambda s : s[tA])
+                        ordenado = sorted(S, key=lambda s : s[target_attribute])
+                        agrupado = groupby(ordenado, key=lambda s : s[target_attribute])
                         # Obtiene las sublclases de S segun su polaridad
                         return [[y for y in list(x[1])] for x in agrupado]
                     # Calcula la entropia de S a partir de las subclases
-#                     print subclases(S)
                     return sum(-(1.0*len(subclass)/len(S))*log((1.0*len(subclass)/len(S)),2) for subclass in subclases(S))
                 # Calcula Information Gain a partir de la entropia y las sublcases
-#                 print '\n'.join([str(A)+"="+str(entropy(S,A)) for att in self.values.keys()])
-#                 print '\n'.join([str(A)+"="+str(entropy(S,A) - sum(entropy(subS(v,S,A),att) * len(subS(v,S,A))/len(S) for v in self.values[A])) for att in self.values.keys()])
-                print "------"
                 return entropy(S,tA) - sum(entropy(subS(v,S,A),tA) * len(subS(v,S,A))/len(S) for v in self.values[A])
             # Determina cual es el mejor atributo que clasifica a los ejemplos segun el Information Gain
-            return max(As, key=lambda A : information_gain(A,tA,self.examples))
+            return max(atts, key=lambda att : information_gain(att,tatt,self.examples))
             
         A = mejor_clasifica(attributes,target_attribute)
         raiz = Nodo(A)
@@ -127,5 +122,5 @@ learn = ID3()
 target_attribute = "JugarTenis"
 attributes = {"Cielo":"Lluvia", "Temperatura":"Suave", "Humedad":"Alta"  , "Viento":"Fuerte"}
 
-arbol = learn.execute(target_attribute, attributes)
+arbol = learn.execute("JugarTenis", attributes)
 print arbol
