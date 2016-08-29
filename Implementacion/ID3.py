@@ -59,16 +59,21 @@ class ID3:
             for atributo, valor in example.items():
                 self.values[atributo].add(valor) 
         
-    def execute(self,target_attribute,attributes):
+    def execute(self,target_attribute,attributes,S=examples):
         '''
         Modela el algoritmo ID3
         @param target_atrribute: algun valor presente en el dataset
         @param atrributes      : conjunto de atributos a evaluar  
         '''
-        def mas_comun(self,target_attribute):
-        # Determina cual es el valor mas comun para el atributo objetivo
-            polaridades = list(self.values[target_attribute])
-            return max(set(polaridades), key=polaridades.count)
+        def mas_comun(tA,S=self.examples):
+            # Determina cual es el valor mas comun para el atributo objetivo
+            # para un determinado subconjunto de ejemplos
+            polaridades = [v for s in S for A,v in s.items() if A == tA]
+            return max(polaridades, key=polaridades.count)
+        
+        def subS(v,S,A):
+            # Calcula subconjunto de S donde el atributo A tiene valor v
+            return [s for s in S if s[A] == v]
         
         # Si todos los ejemplos tiene la misma polaridad, returna nodo con esa polaridad
         if len(set(self.values[target_attribute]))==1:
@@ -76,18 +81,15 @@ class ID3:
         
         # Si no hay mas atributos, retorna el mas comun
         if not attributes:
-            return Nodo(mas_comun(self,target_attribute))
+            return Nodo(mas_comun(target_attribute,S))
         
         # En otro caso
-        def mejor_clasifica(atts,tatt):            
+        def mejor_clasifica(As,tA):            
             def information_gain(A,tA,S):
-                def subS(v,S,A):
-                    # Calcula subconjunto de S donde el atributo A tiene valor v
-                    return [s for s in S if s[A]==v]
-                def entropy(S,target_attribute):                    
+                def entropy(S,tA):                    
                     def subclases(S):
-                        ordenado = sorted(S, key=lambda s : s[target_attribute])
-                        agrupado = groupby(ordenado, key=lambda s : s[target_attribute])
+                        ordenado = sorted(S, key=lambda s : s[tA])
+                        agrupado = groupby(ordenado, key=lambda s : s[tA])
                         # Obtiene las sublclases de S segun su polaridad
                         return [[y for y in list(x[1])] for x in agrupado]
                     # Calcula la entropia de S a partir de las subclases
@@ -95,17 +97,18 @@ class ID3:
                 # Calcula Information Gain a partir de la entropia y las sublcases
                 return entropy(S,tA) - sum(entropy(subS(v,S,A),tA) * len(subS(v,S,A))/len(S) for v in self.values[A])
             # Determina cual es el mejor atributo que clasifica a los ejemplos segun el Information Gain
-            return max(atts, key=lambda att : information_gain(att,tatt,self.examples))
+            return max(As, key=lambda A : information_gain(A,tA,self.examples))
             
         A = mejor_clasifica(attributes,target_attribute)
         raiz = Nodo(A)
         for value in self.values[A]: # Buscar hijos
-            ejemplos_v = [dato for dato in self.examples if dato[A]==value]
+            ejemplos_v = subS(value, S, A)
             if not ejemplos_v:
                 hijo = Nodo(mas_comun(target_attribute))
             else:
-                attributes.pop(A,None)
-                hijo = self.execute(target_attribute, attributes)
+                attributes.remove(A)
+                hijo = self.execute(target_attribute, attributes, S=ejemplos_v)
+                attributes.append(A)
             raiz.add_hijo(hijo,value)                
         
         return raiz
@@ -120,7 +123,7 @@ class ID3:
 learn = ID3()
 
 target_attribute = "JugarTenis"
-attributes = {"Cielo":"Lluvia", "Temperatura":"Suave", "Humedad":"Alta"  , "Viento":"Fuerte"}
+attributes = ["Cielo", "Temperatura", "Humedad", "Viento"]
 
-arbol = learn.execute("JugarTenis", attributes)
+arbol = learn.execute(target_attribute, attributes)
 print arbol
