@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 Metodos de Aprendizaje Automatico
 Facultad de Ingenieria (UdelaR), 2016
@@ -16,7 +17,7 @@ Practico 2, Ejercicio 6
     ejemplos  : [{a1:v1,...,aN:vN}], donde a:Atributo y v:Valor  
 '''
 
-from Tree import Nodo
+from Tree import Nodo, FORK, LAST, VERTICAL, HORIZONTAL
 from math import log
 from itertools import groupby
 from collections import defaultdict
@@ -73,7 +74,8 @@ class ID3:
         
         def subS(v,S,A):
             # Calcula subconjunto de S donde el atributo A tiene valor v
-            return [s for s in S if s[A] == v]
+            return [s for s in S if s[
+                A] == v]
         
         # Si todos los ejemplos tiene la misma polaridad, returna nodo con esa polaridad
         if len(set(self.values[target_attribute]))==1:
