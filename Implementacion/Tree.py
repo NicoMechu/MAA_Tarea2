@@ -31,33 +31,29 @@ class Nodo:
     def __str__(self, prefijo=''):        
         hijos = self.hijos.items()
         next_prefijo = u''.join([prefijo,VERTICAL,u'    '])
-        ret = u''
+        ret = u''.join([u'\n',prefijo,self.dato])
         for etiqueta,subarbol in hijos[:-1]:
-            ret += u''.join([prefijo,FORK,HORIZONTAL,HORIZONTAL,u' (-',etiqueta,u'-)'])
-            ret += u''.join([u'\n',prefijo,VERTICAL,u'    ',VERTICAL])
-            ret += u''.join([u'\n',prefijo,VERTICAL,u'    ',subarbol.dato]) 
-            ret += u''.join([u'\n',prefijo,subarbol.__str__(next_prefijo)])
+            ret += u''.join([u'\n',prefijo,FORK,HORIZONTAL,HORIZONTAL,u' (-',etiqueta,u'-)'])
+            ret += u''.join([u'\n',prefijo,VERTICAL,u'    ',VERTICAL]) 
+            ret += u''.join([subarbol.__str__(next_prefijo)])
         if hijos:
-#             ret += u''.join([u'\n'])
             etiqueta, subarbol = hijos[-1]
             last_prefijo = u''.join([prefijo,VACIO,u'    '])
-            ret += u''.join([prefijo,u'\n',prefijo,LAST,HORIZONTAL,HORIZONTAL,u' (-',etiqueta,u'-)'])
+            ret += u''.join([u'\n',prefijo,LAST,HORIZONTAL,HORIZONTAL,u' (-',etiqueta,u'-)'])
             ret += u''.join([u'\n',prefijo,VACIO,u'    ',VERTICAL])
-            ret += u''.join([u'\n',prefijo,VACIO,u'    ',subarbol.dato])
-            ret += u''.join([u'\n',prefijo,subarbol.__str__(last_prefijo)])
+            ret += u''.join([subarbol.__str__(last_prefijo)])
+        else:
+            ret += u''.join([u'\n',prefijo])
         return ret
-#         ret = "[%s]\n" % (self.dato)
-#         for etiqueta,subarbol in self.hijos.items():
-#             ret += "%s---(%s)--- %s\n" % ('  '*prof,etiqueta,subarbol.__str__(prof+1))
-#         return ret
 
 # Test
-
 h1111 = Nodo(u"h1111")
 h1112 = Nodo(u"h1112")
+h1113 = Nodo(u"h1113")
 h111 = Nodo(u"h111")
 h111.add_hijo(h1111, u"soy 1111")
 h111.add_hijo(h1112, u"soy 1112")
+h111.add_hijo(h1113, u"soy 1113")
 h11 = Nodo(u"h111")
 h11.add_hijo(h111, u"soy 111")
 h12 = Nodo(u"h12")
