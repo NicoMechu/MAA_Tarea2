@@ -21,13 +21,13 @@ from Tree import Nodo, FORK, LAST, VERTICAL, HORIZONTAL
 from math import log
 from itertools import groupby
 from collections import defaultdict
-from copy import deepcopy
+from random import sample
 
 class ID3:
     '''
     @summary:    
     ''' 
-    # Dataset
+    # Dataset - Proposito de test. Tomado del libro.
     examples = [
             {"Cielo":"Sol"   , "Temperatura":"Alta" , "Humedad":"Alta"  , "Viento":"Debil"  ,"JugarTenis":'-'},
             {"Cielo":"Sol"   , "Temperatura":"Alta" , "Humedad":"Alta"  , "Viento":"Fuerte" ,"JugarTenis":'-'},
@@ -45,11 +45,11 @@ class ID3:
             {"Cielo":"Lluvia", "Temperatura":"Suave", "Humedad":"Alta"  , "Viento":"Fuerte" ,"JugarTenis":'-'}
         ]
     values   = defaultdict(set)
-    ejemplos = []
     
     def __init__(self,ejemplos=None):
         '''
         Instancia la clase, indicando opcionalmente un dataset de ejemplos  
+        @parm : Conjunto de ejemplos sobre los que se basara el algoritmo
         '''
         
         # Si dan ejemplos nuevos, instanciarlos
@@ -63,8 +63,10 @@ class ID3:
     def execute(self,target_attribute,attributes,S=examples):
         '''
         Modela el algoritmo ID3
-        @param target_atrribute: algun valor presente en el dataset
-        @param atrributes      : conjunto de atributos a evaluar  
+        @param target_atrribute : Algun valor presente en el dataset
+        @param atrributes       : Conjunto de atributos a evaluar
+        @param S                : Subconjunto de ejemplos sobre los 
+                                  que aplica el algoritmo
         '''
         def mas_comun(tA,S=self.examples):
             # Determina cual es el valor mas comun para el atributo objetivo
@@ -74,8 +76,7 @@ class ID3:
         
         def subS(v,S,A):
             # Calcula subconjunto de S donde el atributo A tiene valor v
-            return [s for s in S if s[
-                A] == v]
+            return [s for s in S if s[A] == v]
         
         # Si todos los ejemplos tiene la misma polaridad, returna nodo con esa polaridad
         if len(set(self.values[target_attribute]))==1:
@@ -114,18 +115,13 @@ class ID3:
             raiz.add_hijo(hijo,value)                
         
         return raiz
-    
-    def train(self):
-        self.tree = self.execute()
-    
-    def evaluate(self,instancia):
-        pass
+        
 
 # Test
 learn = ID3()
 
 target_attribute = "JugarTenis"
 attributes = ["Cielo", "Temperatura", "Humedad", "Viento"]
-
+ 
 arbol = learn.execute(target_attribute, attributes)
 print arbol
