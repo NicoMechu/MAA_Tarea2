@@ -21,13 +21,24 @@ VACIO = u' '
     
 class Nodo:
     
-    def __init__(self, dato):
+    def __init__(self, dato,mas_comun=None):
         self.dato = dato
+        self.mas_comun = mas_comun
         self.hijos = {}
     
     def add_hijo(self,subarbol,etiqueta):
         self.hijos.update({etiqueta:subarbol})
-
+        
+    def predict(self,test,target):
+        if self.hijos:
+            valor = test[self.dato]
+            if self.hijos.has_key(valor):
+                return self.hijos[valor].predict(test,target)
+            else: # Tengo un valor nuevo atributo (nunca visto) de los ejemplos de entrenamiento
+                return 0 if self.mas_comun == test[target] else 1
+        else:
+            return 0 if self.dato == test[target] else 1
+            
     def __unicode__(self, prefijo=''):        
         hijos = self.hijos.items()
         next_prefijo = u''.join([prefijo,VERTICAL,u'    '])

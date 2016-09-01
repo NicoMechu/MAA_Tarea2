@@ -46,12 +46,11 @@ class ID3:
         ]
     values   = defaultdict(set)
     
-    def __init__(self,ejemplos=None):
+    def __init__(self, ejemplos=None):
         '''
         Instancia la clase, indicando opcionalmente un dataset de ejemplos  
         @parm : Conjunto de ejemplos sobre los que se basara el algoritmo
         '''
-        
         # Si dan ejemplos nuevos, instanciarlos
         if ejemplos: self.examples = ejemplos
         
@@ -59,69 +58,72 @@ class ID3:
         for example in self.examples:
             for atributo, valor in example.items():
                 self.values[atributo].add(valor) 
-        
-    def execute(self,target_attribute,attributes,S=examples):
+    
+    def decision_tree(self, target_attribute):
         '''
-        Modela el algoritmo ID3
+        Modela el algoritmo ID3 y devuelve el arbol de decision
         @param target_atrribute : Algun valor presente en el dataset
-        @param atrributes       : Conjunto de atributos a evaluar
-        @param S                : Subconjunto de ejemplos sobre los 
-                                  que aplica el algoritmo
         '''
-        def mas_comun(tA,S=self.examples):
-            # Determina cual es el valor mas comun para el atributo objetivo
-            # para un determinado subconjunto de ejemplos
-            polaridades = [v for s in S for A,v in s.items() if A == tA]
-            return max(polaridades, key=polaridades.count)
         
-        def subS(v,S,A):
-            # Calcula subconjunto de S donde el atributo A tiene valor v
-            return [s for s in S if s[A] == v]
-        
-        # Si todos los ejemplos tiene la misma polaridad, returna nodo con esa polaridad
-        if len(set(self.values[target_attribute]))==1:
-            return Nodo(self.values[target_attribute][0])
-        
-        # Si no hay mas atributos, retorna el mas comun
-        if not attributes:
-            return Nodo(mas_comun(target_attribute,S))
-        
-        # En otro caso
-        def mejor_clasifica(As,tA):            
-            def information_gain(A,tA,S):
-                def entropy(S,tA):                    
-                    def subclases(S):
-                        ordenado = sorted(S, key=lambda s : s[tA])
-                        agrupado = groupby(ordenado, key=lambda s : s[tA])
-                        # Obtiene las sublclases de S segun su polaridad
-                        return [[y for y in list(x[1])] for x in agrupado]
-                    # Calcula la entropia de S a partir de las subclases
-                    return sum(-(1.0*len(subclass)/len(S))*log((1.0*len(subclass)/len(S)),2) for subclass in subclases(S))
-                # Calcula Information Gain a partir de la entropia y las sublcases
-                return entropy(S,tA) - sum(entropy(subS(v,S,A),tA) * len(subS(v,S,A))/len(S) for v in self.values[A])
-            # Determina cual es el mejor atributo que clasifica a los ejemplos segun el Information Gain
-            return max(As, key=lambda A : information_gain(A,tA,self.examples))
+        def execute(target_attribute, attributes, S=self.examples):
+            # Computa el algoritmo ID3
             
-        A = mejor_clasifica(attributes,target_attribute)
-        raiz = Nodo(A)
-        for value in self.values[A]: # Buscar hijos
-            ejemplos_v = subS(value, S, A)
-            if not ejemplos_v:
-                hijo = Nodo(mas_comun(target_attribute))
-            else:
-                attributes.remove(A)
-                hijo = self.execute(target_attribute, attributes, S=ejemplos_v)
-                attributes.append(A)
-            raiz.add_hijo(hijo,value)                
+            def mas_comun(tA,S=self.examples):
+                # Determina cual es el valor mas comun para el atributo objetivo
+                # para un determinado subconjunto de ejemplos
+                polaridades = [v for s in S for A,v in s.items() if A == tA]
+                return max(polaridades, key=polaridades.count)
+            
+            def subS(v,S,A):
+                # Calcula subconjunto de S donde el atributo A tiene valor v
+                return [s for s in S if s[A] == v]
+            
+            # Si todos los ejemplos tiene la misma polaridad, returna nodo con esa polaridad
+            if len(self.values[target_attribute])==1:
+                return Nodo(self.values[target_attribute][0])
+            
+            # Si no hay mas atributos, retorna el mas comun
+            if not attributes:
+                return Nodo(mas_comun(target_attribute,S))
+            
+            # En otro caso
+            def mejor_clasifica(As,tA):            
+                def information_gain(A,tA,S):
+                    def entropy(S,tA):                    
+                        def subclases(S):
+                            ordenado = sorted(S, key=lambda s : s[tA])
+                            agrupado = groupby(ordenado, key=lambda s : s[tA])
+                            # Obtiene las sublclases de S segun su polaridad
+                            return [[y for y in list(x[1])] for x in agrupado]
+                        # Calcula la entropia de S a partir de las subclases
+                        return sum(-(1.0*len(subclass)/len(S))*log((1.0*len(subclass)/len(S)),2) for subclass in subclases(S))
+                    # Calcula Information Gain a partir de la entropia y las sublcases
+                    return entropy(S,tA) - sum(entropy(subS(v,S,A),tA) * len(subS(v,S,A))/len(S) for v in self.values[A])
+                # Determina cual es el mejor atributo que clasifica a los ejemplos segun el Information Gain
+                return max(As, key=lambda A : information_gain(A,tA,self.examples))
+                   
+            A = mejor_clasifica(attributes,target_attribute)
+            raiz = Nodo(A,mas_comun(target_attribute,S))
+            for value in self.values[A]: # Buscar hijos
+                ejemplos_v = subS(value, S, A)
+                if not ejemplos_v:
+                    hijo = Nodo(mas_comun(target_attribute))
+                else:
+                    attributes.remove(A)
+                    hijo = execute(target_attribute, attributes, S=ejemplos_v)
+                    attributes.append(A)
+                raiz.add_hijo(hijo,value)                
+            
+            return raiz
         
-        return raiz
-        
+        Atts = [A for A in self.examples[0].keys() if A != target_attribute]
+        # importa el valor que tiene el t_A?
+        return execute(target_attribute,Atts)
 
 # Test
-learn = ID3()
-
-target_attribute = "JugarTenis"
-attributes = ["Cielo", "Temperatura", "Humedad", "Viento"]
- 
-arbol = learn.execute(target_attribute, attributes)
-print arbol
+# learn = ID3()
+# 
+# target_attribute = "JugarTenis"
+#  
+# arbol = learn.decision_tree(target_attribute)
+# print arbol
