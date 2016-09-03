@@ -90,18 +90,23 @@ def subcase(dataset,tA):
 tA = "G3"
 cases = {"MAT":"Dataset/student-mat.csv","POR":"Dataset/student-por.csv"}
 # cases = {"TEST":"Dataset/student-test.csv"}
-texts  = []
+texts, files  = [], []
 
 for case,path in cases.items():
     for boolean in ["ENUM","BOOL"]:
         for without in ["CON","SIN"]:
-            tcase = "* %s %s %s G1 & G2" % (case, boolean, without)
+            tcase = "%s %s %s G1 & G2" % (case, boolean, without)
             print tcase
             dataset = data(path,boolean=="BOOL",without=="SIN")
             res, tree = subcase(dataset,tA)
-            texts += [tcase , res] # OBS - Se puede aniadir item 'tree' para dibujar arbol (grande)
+            texts += [tcase , res]
+            files += [[tcase,res,tree]]
             print "\n",tcase,"\n",res
 
-with open('Test.txt','w') as f:
+with open('Summarize.txt','w') as f:
     f.write(u'\n'.join(texts).encode('utf8'))
+    
+for file in files:
+    with open(file[0]+' - Tree.txt','w') as f:
+        f.write(u'\n'.join(file))
     
