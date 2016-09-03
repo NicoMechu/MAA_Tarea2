@@ -90,13 +90,13 @@ for case,path in cases.items():
             print tcase
             dataset = data(path,boolean=="BOOL",without=="SIN")
             d_est, var, d_real = process(dataset,tA)
-            res = "Delta_Estimado = %f\nVarianza = %5.3f\nDelta_Real = %f" % (d_est,var,d_real)
+            res = "DELTA ESTIMADO:\n%f\nVARIANZA:\n%5.3f\nDELTA REAL:\n%f" % (d_est,var,d_real)
             texts += [tcase , res]
             print "\n",res,"\n"
             
             with open(tcase+".txt",'w') as f: # Imrpimir resultado en archivo
+                f.write('\n'.join([tcase , res]))
                 f.write(ID3(ejemplos=dataset,max_prof=5).decision_tree(tA).__str__())
-                f.write('\n'.join(texts))
  
 with open('Summarize.txt','w') as f:
     f.write('\n'.join(texts))
