@@ -31,7 +31,7 @@ def data(csv_file,boolean,without):
         
 def delta(train_set,test_set,tA):    
     # Calcula el error del algoritmo
-    hypotesis = ID3(ejemplos=train_set,max_prof=None).decision_tree(tA)
+    hypotesis = ID3(ejemplos=train_set,max_prof=5).decision_tree(tA)
     return 1.0*sum(hypotesis.predict(test,tA) for test in test_set)/len(test_set)
     
 def cross_validation(S,tA,K):
@@ -76,8 +76,8 @@ def process(D,tA,slice=0.2,K=10):
 tA = "G3"   
 # cases = {"MAT":"Dataset/student-mat.csv","POR":"Dataset/student-por.csv"}
 # cases = {"MAT":"Dataset/student-mat.csv"}
-cases = {"POR":"Dataset/student-por.csv"}
-# cases = {"TEST":"Dataset/student-test.csv"}
+# cases = {"POR":"Dataset/student-por.csv"}
+cases = {"TEST":"Dataset/student-test.csv"}
 boolean_set = ["ENUM","BOOL"]
 without_set = ["CON","SIN"]
 max_depths  = [None,5,10]
@@ -94,7 +94,7 @@ for case,path in cases.items():
             texts += [tcase , res]
             print "\n",res,"\n"
             
-            with open(tcase,'w') as f: # Imrpimir resultado en archivo
+            with open(tcase+".txt",'w') as f: # Imrpimir resultado en archivo
                 f.write(ID3(dataset).decision_tree(tA).__str__())
                 f.write('\n'.join(texts))
  
