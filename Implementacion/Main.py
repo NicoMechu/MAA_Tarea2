@@ -74,10 +74,10 @@ def process(D,tA,slice=0.2,K=10):
 
 #########################    PRINCIPAL    ##############################
 tA = "G3"   
-# cases = {"MAT":"Dataset/student-mat.csv","POR":"Dataset/student-por.csv"}
+cases = {"MAT":"Dataset/student-mat.csv","POR":"Dataset/student-por.csv"}
 # cases = {"MAT":"Dataset/student-mat.csv"}
 # cases = {"POR":"Dataset/student-por.csv"}
-cases = {"TEST":"Dataset/student-test.csv"}
+# cases = {"TEST":"Dataset/student-test.csv"}
 boolean_set = ["ENUM","BOOL"]
 without_set = ["CON","SIN"]
 max_depths  = [None,5,10]
@@ -95,7 +95,7 @@ for case,path in cases.items():
             print "\n",res,"\n"
             
             with open(tcase+".txt",'w') as f: # Imrpimir resultado en archivo
-                f.write(ID3(dataset).decision_tree(tA).__str__())
+                f.write(ID3(ejemplos=dataset,max_prof=5).decision_tree(tA).__str__())
                 f.write('\n'.join(texts))
  
 with open('Summarize.txt','w') as f:
