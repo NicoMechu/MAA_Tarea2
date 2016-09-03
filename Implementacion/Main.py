@@ -15,12 +15,8 @@ Practico 2, Ejercicio 6
 '''
 
 from ID3 import ID3
-from Tree import FORK, LAST, VERTICAL, HORIZONTAL
 from csv import DictReader
 from random import shuffle
-import sys  
-reload(sys)  
-sys.setdefaultencoding('utf8')
 
 def data(csv_file,boolean,without):
     # Obtiene los ejemplos a partir de un archivo *.csv
@@ -35,33 +31,30 @@ def data(csv_file,boolean,without):
         
 def delta(train_set,test_set,tA):    
     # Calcula el error del algoritmo
-    hypotesis = ID3(train_set).decision_tree(tA)
+    hypotesis = ID3(ejemplos=train_set,max_prof=None).decision_tree(tA)
     return 1.0*sum(hypotesis.predict(test,tA) for test in test_set)/len(test_set)
     
 def cross_validation(S,tA,K):
-    '''
-    '''
+    # Realiza KFold cross-validation de tamanio K sobre el conjunto S
+    # a fin de obtener el delta estimado y la varianza
+    
     def KFold(S,K):
         # Pariciona el conjunto S en K parejas (train,test)
-        ret = []
         for k in xrange(K):
             train = [x for i,x in enumerate(S) if i % K != k]
             test  = [x for i,x in enumerate(S) if i % K == k]
-            ret.append((train,test))
-        return ret
+            yield train, test
         
     # Entrenar - Cross-validation de tamanio 10
-    deltas = []
-    cv_set = KFold(S,K) 
-    TOTAL, cont = len(cv_set), 1
-    for train, test in cv_set:
-        print "\r[CROSS-VALIDATION] Progress: %i/%i" % (cont,TOTAL),
+    deltas, cont = [], 1
+    for train, test in KFold(S,K):
+        print "\r[CROSS-VALIDATION] Progress: %i/%i" % (cont,K),
         current_delta = delta(train,test,tA)
         deltas.append(current_delta)
         cont += 1
     
-    estimated = sum(deltas)/len(cv_set)
-    variance = 1.0*sum([(d - estimated )**2 for d in deltas])/len(cv_set)
+    estimated = sum(deltas)/K
+    variance = 1.0*sum([(d - estimated )**2 for d in deltas])/K
     return estimated, variance
     
 def process(D,tA,slice=0.2,K=10):
@@ -79,34 +72,34 @@ def process(D,tA,slice=0.2,K=10):
     
     return delta_estimated, variance, delta_real
 
-def subcase(dataset,tA):
-    d_est, var, d_real = process(dataset,tA)
-    res = u"Delta_Estimado = %f , Varianza = %5.3f , Delta_Real = %f" % (d_est,var,d_real)
-    tree = ID3(dataset).decision_tree(tA)
-    return res, tree.__str__()
-    
-
 #########################    PRINCIPAL    ##############################
-tA = "G3"
-cases = {"MAT":"Dataset/student-mat.csv","POR":"Dataset/student-por.csv"}
+tA = "G3"   
+# cases = {"MAT":"Dataset/student-mat.csv","POR":"Dataset/student-por.csv"}
+# cases = {"MAT":"Dataset/student-mat.csv"}
+cases = {"POR":"Dataset/student-por.csv"}
 # cases = {"TEST":"Dataset/student-test.csv"}
-texts, files  = [], []
-
+boolean_set = ["ENUM","BOOL"]
+without_set = ["CON","SIN"]
+max_depths  = [None,5,10]
+ 
+texts = []
 for case,path in cases.items():
-    for boolean in ["ENUM","BOOL"]:
-        for without in ["CON","SIN"]:
+    for boolean in boolean_set:
+        for without in without_set:
             tcase = "%s %s %s G1 & G2" % (case, boolean, without)
             print tcase
             dataset = data(path,boolean=="BOOL",without=="SIN")
-            res, tree = subcase(dataset,tA)
+            d_est, var, d_real = process(dataset,tA)
+            res = "Delta_Estimado = %f\nVarianza = %5.3f\nDelta_Real = %f" % (d_est,var,d_real)
             texts += [tcase , res]
-            files += [[tcase,res,tree]]
-            print "\n",tcase,"\n",res
-
+            print "\n",res,"\n"
+            
+            with open(tcase,'w') as f: # Imrpimir resultado en archivo
+                f.write(ID3(dataset).decision_tree(tA).__str__())
+                f.write('\n'.join(texts))
+ 
 with open('Summarize.txt','w') as f:
-    f.write(u'\n'.join(texts).encode('utf8'))
-    
-for file in files:
-    with open(file[0]+' - Tree.txt','w') as f:
-        f.write(u'\n'.join(file))
-    
+    f.write('\n'.join(texts))
+
+# dataset = data("Dataset/student-mat.csv",True,True)
+# arbol = ID3(dataset).decision_tree("G3")

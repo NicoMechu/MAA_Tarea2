@@ -11,7 +11,6 @@ Practico 2, Ejercicio 6
     
 @summary: 
    Modela el algoritmo ID3.
-   Realiza su entrenamiento y verificacion.
 
 @attention: 
     ejemplos  : [{a1:v1,...,aN:vN}], donde a:Atributo y v:Valor  
@@ -44,15 +43,19 @@ class ID3:
             {"Cielo":"Nubes" , "Temperatura":"Alta" , "Humedad":"Normal", "Viento":"Debil"  ,"JugarTenis":'+'},
             {"Cielo":"Lluvia", "Temperatura":"Suave", "Humedad":"Alta"  , "Viento":"Fuerte" ,"JugarTenis":'-'}
         ]
-    values   = defaultdict(set)
+    values    = defaultdict(set)
+    max_depht  = 10000
     
-    def __init__(self, ejemplos=None):
+    def __init__(self,ejemplos=None,max_prof=None):
         '''
         Instancia la clase, indicando opcionalmente un dataset de ejemplos  
         @parm : Conjunto de ejemplos sobre los que se basara el algoritmo
         '''
         # Si dan ejemplos nuevos, instanciarlos
         if ejemplos: self.examples = ejemplos
+        
+        # Dar limite de profundidad para poda
+        if max_prof: self.max_depht = max_prof
         
         # Extraer los valores de atributos para cada dato
         for example in self.examples:
@@ -65,7 +68,7 @@ class ID3:
         @param target_atrribute : Algun valor presente en el dataset
         '''
         
-        def execute(target_attribute, attributes, S=self.examples):
+        def execute(target_attribute, attributes, S=self.examples, depth=0):
             # Computa el algoritmo ID3
             
             def mas_comun(tA,S=self.examples):
@@ -82,8 +85,8 @@ class ID3:
             if len(self.values[target_attribute])==1:
                 return Nodo(self.values[target_attribute][0])
             
-            # Si no hay mas atributos, retorna el mas comun
-            if not attributes:
+            # Si no hay mas atributos o alcanza un max, retorna el mas comun
+            if not attributes or depth > self.max_depht:
                 return Nodo(mas_comun(target_attribute,S))
             
             # En otro caso
@@ -110,7 +113,7 @@ class ID3:
                     hijo = Nodo(mas_comun(target_attribute))
                 else:
                     attributes.remove(A)
-                    hijo = execute(target_attribute, attributes, S=ejemplos_v)
+                    hijo = execute(target_attribute, attributes, S=ejemplos_v,depth=depth+1)
                     attributes.append(A)
                 raiz.add_hijo(hijo,value)                
             
@@ -122,8 +125,8 @@ class ID3:
 
 # Test
 # learn = ID3()
-# 
-# target_attribute = "JugarTenis"
 #  
+# target_attribute = "JugarTenis"
+#   
 # arbol = learn.decision_tree(target_attribute)
 # print arbol
