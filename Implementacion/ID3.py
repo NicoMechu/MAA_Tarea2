@@ -44,7 +44,7 @@ class ID3:
             {"Cielo":"Lluvia", "Temperatura":"Suave", "Humedad":"Alta"  , "Viento":"Fuerte" ,"JugarTenis":'-'}
         ]
     values    = defaultdict(set)
-    max_depht  = 10000
+    max_depht = None
     
     def __init__(self,ejemplos=None,max_prof=None):
         '''
@@ -74,7 +74,7 @@ class ID3:
             def mas_comun(tA,S=self.examples):
                 # Determina cual es el valor mas comun para el atributo objetivo
                 # para un determinado subconjunto de ejemplos
-                polaridades = [v for s in S for A,v in s.items() if A == tA]
+                polaridades = map(lambda s: s[tA],S) 
                 return max(polaridades, key=polaridades.count)
             
             def subS(v,S,A):
@@ -86,7 +86,7 @@ class ID3:
                 return Nodo(self.values[target_attribute][0])
             
             # Si no hay mas atributos o alcanza un max, retorna el mas comun
-            if not attributes or depth > self.max_depht:
+            if not attributes or (self.max_depht and depth > self.max_depht):
                 return Nodo(mas_comun(target_attribute,S))
             
             # En otro caso

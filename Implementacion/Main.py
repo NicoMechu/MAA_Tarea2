@@ -17,6 +17,9 @@ Practico 2, Ejercicio 6
 from ID3 import ID3
 from csv import DictReader
 from random import shuffle
+import os
+
+max_depth = None
 
 def data(csv_file,boolean,without):
     # Obtiene los ejemplos a partir de un archivo *.csv
@@ -24,6 +27,7 @@ def data(csv_file,boolean,without):
         D = [row for row in DictReader(f,delimiter=";")]
         # Procesamiento segun las flags
         if boolean: # Transformar a booleano - Update no retorna valores, por eso no se asigna a nada
+            [d.update({'absences':('Aceptable' if int(d['absences']) < 10 else 'Muchas')}) for d in D]
             [d.update({'G3':('Malo' if int(d['G3']) < 12 else 'Bueno')}) for d in D]
         if without: # Remover G1 y G2
             D = [{k:v for k,v in d.items() if k!='G1' and k!='G2' } for d in D]
@@ -31,7 +35,7 @@ def data(csv_file,boolean,without):
         
 def delta(train_set,test_set,tA):    
     # Calcula el error del algoritmo
-    hypotesis = ID3(ejemplos=train_set,max_prof=5).decision_tree(tA)
+    hypotesis = ID3(ejemplos=train_set,max_prof=max_depth).decision_tree(tA)
     return 1.0*sum(hypotesis.predict(test,tA) for test in test_set)/len(test_set)
     
 def cross_validation(S,tA,K):
@@ -75,31 +79,31 @@ def process(D,tA,slice=0.2,K=10):
 #########################    PRINCIPAL    ##############################
 tA = "G3"   
 cases = {"MAT":"Dataset/student-mat.csv","POR":"Dataset/student-por.csv"}
-# cases = {"MAT":"Dataset/student-mat.csv"}
-# cases = {"POR":"Dataset/student-por.csv"}
 # cases = {"TEST":"Dataset/student-test.csv"}
 boolean_set = ["ENUM","BOOL"]
 without_set = ["CON","SIN"]
-max_depths  = [None,5,10]
+max_depths  = [5] # Se pueden agregar mas valores si se desea probar - None:Sin profundidad
  
 texts = []
 for case,path in cases.items():
     for boolean in boolean_set:
         for without in without_set:
-            tcase = "%s %s %s G1 & G2" % (case, boolean, without)
-            print tcase
-            dataset = data(path,boolean=="BOOL",without=="SIN")
-            d_est, var, d_real = process(dataset,tA)
-            res = "DELTA ESTIMADO:\n%f\nVARIANZA:\n%5.3f\nDELTA REAL:\n%f" % (d_est,var,d_real)
-            texts += [tcase , res]
-            print "\n",res,"\n"
-            
-            with open(tcase+".txt",'w') as f: # Imrpimir resultado en archivo
-                f.write('\n'.join([tcase , res]))
-                f.write(ID3(ejemplos=dataset,max_prof=5).decision_tree(tA).__str__())
- 
+            for max_depth in max_depths:
+                tcase = "%s %s %s G1&G2 PROF%s" % (case, boolean, without,str(max_depth))
+                print tcase
+                dataset = data(path,boolean=="BOOL",without=="SIN")
+                d_est, var, d_real = process(dataset,tA)
+                res = "DELTA ESTIMADO:\n%f\nVARIANZA:\n%5.3f\nDELTA REAL:\n%f" % (d_est,var,d_real)
+                texts += [tcase , res]
+                print "\n",res.replace("\n", " "),"\n"
+                
+                path_res = ''.join(["./Resultados/",'_'.join(tcase.split(' ')),".txt"])
+                if not os.path.isdir('./Resultados/'): os.mkdir(os.path.dirname('./Resultados/'))
+                print "Copiadondo resultado completo en ",path_res, "..."
+                with open(path_res,'w') as f: 
+                    f.write('\n'.join([tcase , res]))
+                    f.write(ID3(ejemplos=dataset,max_prof=max_depth).decision_tree(tA).__str__())
+              
 with open('Summarize.txt','w') as f:
     f.write('\n'.join(texts))
-
-# dataset = data("Dataset/student-mat.csv",True,True)
-# arbol = ID3(dataset).decision_tree("G3")
+print "Fin" 
