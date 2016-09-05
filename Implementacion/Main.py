@@ -105,7 +105,7 @@ for case,path in cases.items():
                 print "Copiadondo resultado completo en ",path_res, "..."
                 with open(path_res,'w') as f: 
                     tcase = ' '.join(["*",tcase,"*"])
-                    f.write('\n'.join([tcase , res,'\n']))
+                    f.write('\n'.join([tcase , res.replace(" ","\n"),'\n']))
                     f.write(ID3(ejemplos=dataset,max_prof=max_depth).decision_tree(tA).__str__())
               
 with open('Summarize.txt','w') as f:
