@@ -28,7 +28,10 @@ def data(csv_file,boolean,without):
         # Procesamiento segun las flags
         if boolean: # Transformar a booleano - Update no retorna valores, por eso no se asigna a nada
             [d.update({'absences':('Aceptable' if int(d['absences']) < 10 else 'Muchas')}) for d in D]
+            [d.update({'G1':('Malo' if int(d['G1']) < 12 else 'Bueno')}) for d in D]
+            [d.update({'G2':('Malo' if int(d['G2']) < 12 else 'Bueno')}) for d in D]
             [d.update({'G3':('Malo' if int(d['G3']) < 12 else 'Bueno')}) for d in D]
+            [d.update({'age':('Menor' if int(d['age']) < 18 else 'Adulto')}) for d in D]
         if without: # Remover G1 y G2
             D = [{k:v for k,v in d.items() if k!='G1' and k!='G2' } for d in D]
         return D 
@@ -80,7 +83,7 @@ def process(D,tA,slice=0.2,K=10):
 tA = "G3"   
 cases = {"MAT":"Dataset/student-mat.csv","POR":"Dataset/student-por.csv"}
 # cases = {"TEST":"Dataset/student-test.csv"}
-boolean_set = ["ENUM","BOOL"]
+boolean_set = ["ORIG","BOOL"]
 without_set = ["CON","SIN"]
 max_depths  = [5] # Se pueden agregar mas valores si se desea probar - None:Sin profundidad
  
@@ -93,15 +96,16 @@ for case,path in cases.items():
                 print tcase
                 dataset = data(path,boolean=="BOOL",without=="SIN")
                 d_est, var, d_real = process(dataset,tA)
-                res = "DELTA ESTIMADO:\n%f\nVARIANZA:\n%5.3f\nDELTA REAL:\n%f" % (d_est,var,d_real)
-                texts += [tcase , res]
-                print "\n",res.replace("\n", " "),"\n"
+                res = "\nDELTA_ESTIMADO: %f VARIANZA: %5.3f DELTA_REAL: %f" % (d_est,var,d_real)
+                texts += [tcase , res.replace(" ","\n")]
+                print res,"\n"
                 
                 path_res = ''.join(["./Resultados/",'_'.join(tcase.split(' ')),".txt"])
                 if not os.path.isdir('./Resultados/'): os.mkdir(os.path.dirname('./Resultados/'))
                 print "Copiadondo resultado completo en ",path_res, "..."
                 with open(path_res,'w') as f: 
-                    f.write('\n'.join([tcase , res]))
+                    tcase = ' '.join(["*",tcase,"*"])
+                    f.write('\n'.join([tcase , res,'\n']))
                     f.write(ID3(ejemplos=dataset,max_prof=max_depth).decision_tree(tA).__str__())
               
 with open('Summarize.txt','w') as f:
